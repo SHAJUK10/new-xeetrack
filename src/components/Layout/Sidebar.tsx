@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  FolderOpen, 
-  Users, 
-  BarChart3, 
+import {
+  FolderOpen,
+  Users,
+  BarChart3,
   Calendar,
   CheckSquare,
   Layers,
@@ -12,7 +12,9 @@ import {
   Eye,
   ListTodo,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,6 +24,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const { user } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const getManagerMenuItems = () => [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -68,44 +71,57 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
     }
   };
 
-  return (
-    <aside className={`w-64 ${getThemeColors()} border-r min-h-screen`}>
-      <div className="p-6">
-        <nav className="space-y-2">
-          {getMenuItems().map((item) => {
-            const Icon = item.icon;
-            const isActive = activeView === item.id;
-            
-            return (
-              <button
-                key={item.id}
-                onClick={() => onViewChange(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive 
-                    ? getActiveColors()
-                    : 'text-gray-700 hover:bg-white hover:bg-opacity-50'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+  const handleMenuItemClick = (viewId: string) => {
+    onViewChange(viewId);
+    setIsMobileMenuOpen(false);
+  };
 
-        {/* {user?.role === 'client' && (
-          <div className="mt-8 p-4 bg-white rounded-lg border border-red-200">
-            <h3 className="font-semibold text-gray-900 mb-2">Quick Guide</h3>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>• View project progress</p>
-              <p>• Approve/reject stages</p>
-              <p>• Upload reference files</p>
-              <p>• Add feedback comments</p>
-              <p>• Track team responses</p>
-            </div>
-          </div>
-        )} */} 
-      </div>
-    </aside>
+  return (
+    <>
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className={`fixed bottom-4 right-4 z-50 lg:hidden p-3 rounded-full shadow-lg ${getActiveColors()}`}
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-40
+        w-64 ${getThemeColors()} border-r min-h-screen
+        transform transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-4 sm:p-6">
+          <nav className="space-y-2">
+            {getMenuItems().map((item) => {
+              const Icon = item.icon;
+              const isActive = activeView === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleMenuItemClick(item.id)}
+                  className={`w-full flex items-center space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? getActiveColors()
+                      : 'text-gray-700 hover:bg-white hover:bg-opacity-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 }

@@ -97,16 +97,16 @@ export function StorageManager({ projectId }: StorageManagerProps) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Shared Storage</h2>
-          <p className="text-gray-600">All project files and documents</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Shared Storage</h2>
+          <p className="text-sm sm:text-base text-gray-600">All project files and documents</p>
         </div>
         {user?.role !== 'client' && (
-          <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center space-x-2">
+          <label className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center justify-center space-x-2">
             <Upload className="w-4 h-4" />
-            <span>Upload Files</span>
+            <span className="text-sm sm:text-base">Upload Files</span>
             <input
               type="file"
               multiple
@@ -118,7 +118,7 @@ export function StorageManager({ projectId }: StorageManagerProps) {
       </div>
 
       {/* Filters */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mb-4 sm:mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -154,34 +154,34 @@ export function StorageManager({ projectId }: StorageManagerProps) {
       </div>
 
       {/* Files Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filteredFiles.map(file => (
-          <div key={file.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center space-x-2">
+          <div key={file.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+              <div className="flex items-center space-x-2 min-w-0 flex-1">
                 {getFileIcon(file.file_type)}
-                <span className="font-medium text-gray-900 truncate">{file.filename}</span>
+                <span className="font-medium text-sm sm:text-base text-gray-900 truncate">{file.filename}</span>
               </div>
               <a
                 href={file.file_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
                 title="Download file"
               >
                 <Download className="w-4 h-4" />
               </a>
             </div>
 
-            <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
-                <Folder className="w-4 h-4" />
+            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+              <div className="flex items-center space-x-1 min-w-0">
+                <Folder className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">{getFileLocation(file)}</span>
               </div>
-              <div>
+              <div className="truncate">
                 <strong>Size:</strong> {formatFileSize(file.size)}
               </div>
-              <div>
+              <div className="truncate">
                 <strong>Uploaded by:</strong> {file.uploader_name}
               </div>
               <div>

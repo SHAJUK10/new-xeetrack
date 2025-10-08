@@ -74,11 +74,11 @@ export function FileManager({ stageId, canUpload = true }: FileManagerProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="text-lg font-semibold text-gray-900">Files & Documents</h4>
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <h4 className="text-base sm:text-lg font-semibold text-gray-900">Files & Documents</h4>
         {canUpload && (
-          <label className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center space-x-2">
+          <label className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center space-x-2">
             <Upload className="w-4 h-4" />
             <span>Upload</span>
             <input
@@ -94,9 +94,9 @@ export function FileManager({ stageId, canUpload = true }: FileManagerProps) {
       {/* Upload Area */}
       {canUpload && (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragActive 
-              ? 'border-green-400 bg-green-50' 
+          className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-colors ${
+            dragActive
+              ? 'border-green-400 bg-green-50'
               : 'border-gray-300 bg-gray-50 hover:border-green-400'
           }`}
           onDragEnter={handleDrag}
@@ -104,27 +104,31 @@ export function FileManager({ stageId, canUpload = true }: FileManagerProps) {
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-600 mb-2">Drag and drop files here, or click to browse</p>
+          <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2 sm:mb-3" />
+          <p className="text-sm sm:text-base text-gray-600 mb-1 sm:mb-2">Drag and drop files here, or click to browse</p>
           <p className="text-xs text-gray-500">Supports all file types up to 50MB</p>
         </div>
       )}
 
       {/* Files List */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {stageFiles.map(file => (
-          <div key={file.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {getFileIcon(file.filename)}
-              <div>
-                <p className="font-medium text-gray-900">{file.filename}</p>
-                <p className="text-sm text-gray-500">
-                  {formatFileSize(file.size)} • Uploaded by {file.uploaded_by} • 
+          <div key={file.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 flex items-start sm:items-center justify-between gap-2">
+            <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+              <div className="flex-shrink-0 mt-0.5 sm:mt-0">
+                {getFileIcon(file.filename)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm sm:text-base text-gray-900 truncate">{file.filename}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">
+                  {formatFileSize(file.size)} • {file.uploader_name}
+                </p>
+                <p className="text-xs text-gray-400 sm:hidden">
                   {new Date(file.timestamp).toLocaleDateString()}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <a
                 href={file.file_url}
                 target="_blank"
