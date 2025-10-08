@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Upload, Download, FileText, Image, Video, Archive, Trash2, ExternalLink } from 'lucide-react';
+import { Upload, Download, FileText, Image, Video, Archive, Trash2 } from 'lucide-react';
 
 interface FileManagerProps {
   stageId: string;
@@ -106,7 +106,7 @@ export function FileManager({ stageId, canUpload = true }: FileManagerProps) {
         >
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-gray-600 mb-2">Drag and drop files here, or click to browse</p>
-          <p className="text-xs text-gray-500">Supports all file types up to 10MB</p>
+          <p className="text-xs text-gray-500">Supports all file types up to 50MB</p>
         </div>
       )}
 
@@ -125,16 +125,15 @@ export function FileManager({ stageId, canUpload = true }: FileManagerProps) {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  // Open Google Drive link in new tab
-                  window.open(file.file_url, '_blank');
-                }}
+              <a
+                href={file.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-green-600 hover:text-green-800 transition-colors"
-                title="Open in Google Drive"
+                title="Download file"
               >
-                <ExternalLink className="w-4 h-4" />
-              </button>
+                <Download className="w-4 h-4" />
+              </a>
             </div>
           </div>
         ))}

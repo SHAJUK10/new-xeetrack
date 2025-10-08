@@ -5,7 +5,7 @@ import { Project, Stage, CommentTask, GlobalComment, File, Task, Meeting, Brochu
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './AuthContext';
 import { supabase as externalSupabase } from '../superBaseClient';
-import { googleDriveService } from '../services/googleDriveService';
+import { supabaseStorageService } from '../services/supabaseStorageService';
 
 interface DataContextType {
   projects: Project[];
@@ -763,37 +763,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Find project ID from stage ID
     const stage = stages.find(s => s.id === stageId);
     const projectId = stage?.project_id;
-    
+
     if (!projectId) {
       console.error('Could not find project ID for stage:', stageId);
       return;
     }
 
     try {
-      // Verify user has access to the project
       const projectIds = await fetchAccessibleProjectIds();
       if (!projectIds?.includes(projectId)) {
         throw new Error('Unauthorized access to project');
       }
 
-      // Upload file to Google Drive
-      console.log('Uploading file to Google Drive:', file.name, 'Project:', projectId);
-      const uploadResult = await googleDriveService.uploadFile(file, projectId, stageId);
-      
+      console.log('Uploading file to Supabase Storage:', file.name, 'Project:', projectId);
+      const uploadResult = await supabaseStorageService.uploadFile(file, projectId, stageId, user.id);
+
       if (!uploadResult.success) {
-        throw new Error(uploadResult.error || 'Failed to upload file to Google Drive');
+        throw new Error(uploadResult.error || 'Failed to upload file to storage');
       }
 
-      // Save file metadata to database
       const fileData: Omit<File, 'id' | 'timestamp'> = {
         stage_id: stageId,
         project_id: projectId,
         filename: file.name,
-        file_url: uploadResult.webViewLink || googleDriveService.getBaseFolderUrl(),
-        storage_path: uploadResult.fileId || `google_drive_${Date.now()}`,
+        file_url: uploadResult.publicUrl || '',
+        storage_path: uploadResult.path || '',
         uploaded_by: user.id,
         uploader_name: uploaderName,
         size: file.size,
@@ -819,16 +815,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         console.warn('Supabase not available, cannot save file metadata');
       }
 
-      // Reload files for the project
       await loadFiles();
-      console.log('File uploaded successfully to Google Drive:', file.name);
+      console.log('File uploaded successfully to Supabase Storage:', file.name);
     } catch (error) {
-      console.error('Error uploading file to Google Drive:', error);
+      console.error('Error uploading file to Supabase Storage:', error);
       throw error;
     }
   };
 
-  // Upload file directly to a project (no stage required)
   const uploadFileToProject = async (projectId: string, file: globalThis.File, uploaderName: string) => {
     if (!user) {
       console.warn('User not available');
@@ -841,18 +835,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw new Error('Unauthorized access to project');
       }
 
-      console.log('Uploading file to Google Drive (project-level):', file.name, 'Project:', projectId);
-      const uploadResult = await googleDriveService.uploadFile(file, projectId);
+      console.log('Uploading file to Supabase Storage (project-level):', file.name, 'Project:', projectId);
+      const uploadResult = await supabaseStorageService.uploadFile(file, projectId, undefined, user.id);
 
       if (!uploadResult.success) {
-        throw new Error(uploadResult.error || 'Failed to upload file to Google Drive');
+        throw new Error(uploadResult.error || 'Failed to upload file to storage');
       }
 
       const fileData: Omit<File, 'id' | 'timestamp'> = {
         project_id: projectId,
         filename: file.name,
-        file_url: uploadResult.webViewLink || googleDriveService.getBaseFolderUrl(),
-        storage_path: uploadResult.fileId || `google_drive_${Date.now()}`,
+        file_url: uploadResult.publicUrl || '',
+        storage_path: uploadResult.path || '',
         uploaded_by: user.id,
         uploader_name: uploaderName,
         size: file.size,
@@ -875,14 +869,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       await loadFiles();
-      console.log('File uploaded successfully to Google Drive (project-level):', file.name);
+      console.log('File uploaded successfully to Supabase Storage (project-level):', file.name);
     } catch (error) {
-      console.error('Error uploading file to Google Drive (project-level):', error);
+      console.error('Error uploading file to Supabase Storage (project-level):', error);
       throw error;
     }
   };
 
-  // Delete file from Google Drive and database
   const deleteFile = async (fileId: string, storagePath: string) => {
     if (!user) {
       console.warn('User not available');
@@ -890,20 +883,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Verify user has access to the project
       const file = files.find(f => f.id === fileId);
       if (!file || !(await fetchAccessibleProjectIds())?.includes(file.project_id)) {
         throw new Error('Unauthorized access to file');
       }
 
-      // Delete from Google Drive
-      console.log('Deleting file from Google Drive:', storagePath);
-      const deleteSuccess = await googleDriveService.deleteFile(storagePath);
+      console.log('Deleting file from Supabase Storage:', storagePath);
+      const deleteSuccess = await supabaseStorageService.deleteFile(storagePath);
       if (!deleteSuccess) {
-        console.warn('Failed to delete file from Google Drive, but continuing with database deletion');
+        console.warn('Failed to delete file from storage, but continuing with database deletion');
       }
 
-      // Delete from database
       if (supabase) {
         const { error: dbError } = await supabase
           .from('files')
@@ -915,11 +905,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Reload files to update UI
       await loadFiles();
-      console.log('File deleted successfully from Google Drive:', fileId);
+      console.log('File deleted successfully from storage:', fileId);
     } catch (error) {
-      console.error('Error deleting file from Google Drive:', error);
+      console.error('Error deleting file from storage:', error);
       throw error;
     }
   };
@@ -1662,6 +1651,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateStageApproval,
       uploadFile,
       uploadFileFromInput,
+      uploadFileToProject,
       uploadBrochureImage,
       updateStageProgress,
       scheduleMeeting,
@@ -1684,8 +1674,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       createLead,
       updateLead,
       deleteLead,
-      // project overviews
-      projectOverviews,
       getProjectOverview,
       saveProjectOverview,
       updateProjectOverview,

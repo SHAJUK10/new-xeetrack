@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { Upload, Download, Search, Filter, FileText, Image, Video, Archive, Folder, ExternalLink } from 'lucide-react';
+import { Upload, Download, Search, Filter, FileText, Image, Video, Archive, Folder } from 'lucide-react';
 
 interface StorageManagerProps {
   projectId?: string;
@@ -101,18 +101,7 @@ export function StorageManager({ projectId }: StorageManagerProps) {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Shared Storage</h2>
-          <p className="text-gray-600">All project files and documents stored in Google Drive</p>
-          <div className="mt-2 flex items-center space-x-2 text-sm text-blue-600">
-            <ExternalLink className="w-4 h-4" />
-            <a 
-              href="https://drive.google.com/drive/folders/1E-UswgTvWITsG1xCCIgbVKtLjOburEhC?usp=drive_link" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              Open Google Drive Folder
-            </a>
-          </div>
+          <p className="text-gray-600">All project files and documents</p>
         </div>
         {user?.role !== 'client' && (
           <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center space-x-2">
@@ -173,16 +162,15 @@ export function StorageManager({ projectId }: StorageManagerProps) {
                 {getFileIcon(file.file_type)}
                 <span className="font-medium text-gray-900 truncate">{file.filename}</span>
               </div>
-              <button
-                onClick={() => {
-                  // Open Google Drive link in new tab
-                  window.open(file.file_url, '_blank');
-                }}
+              <a
+                href={file.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 transition-colors"
-                title="Open in Google Drive"
+                title="Download file"
               >
-                <ExternalLink className="w-4 h-4" />
-              </button>
+                <Download className="w-4 h-4" />
+              </a>
             </div>
 
             <div className="space-y-2 text-sm text-gray-600">
